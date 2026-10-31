@@ -1,0 +1,6 @@
+node_modules/
+.env*
+!.env.example
+*备份*
+*backup*.json
+original.html
