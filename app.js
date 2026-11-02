@@ -263,6 +263,7 @@ setInterval(() => { if (!document.hidden) syncEngine?.sync(); }, 20000);
 window.addEventListener('beforeunload', e => {
   if (syncEngine?.state.dirty) { e.preventDefault(); e.returnValue = ''; }
 });
+if (!window.__ACCOUNT_REDIRECT__) {
 try {
   const config = window.NAV_CLOUD_CONFIG;
   if (!config?.url || !config?.publishableKey || !window.supabase) throw Error('同步组件未加载，请检查网络后点击“重试”。');
@@ -276,3 +277,4 @@ try {
   });
   resumeSession();
 } catch (error) { authMessage.textContent = error.message; }
+}
