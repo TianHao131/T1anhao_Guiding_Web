@@ -220,26 +220,20 @@ async function resumeSession() {
   syncEngine = engine;
   await engine.sync();
 }
-async function authenticate(mode) {
+async function signIn() {
   if (!client || !loginForm.reportValidity()) return;
   const buttons = [...loginForm.querySelectorAll('button')]; buttons.forEach(b => b.disabled = true);
-  authMessage.textContent = mode === 'signup' ? '正在创建同步账号…' : '正在登录…';
+  authMessage.textContent = '正在登录…';
   try {
     const email = $('login-email').value.trim(), password = $('login-password').value;
-    const result = mode === 'signup'
-      ? await client.auth.signUp({email, password, options: {emailRedirectTo: location.origin + location.pathname}})
-      : await client.auth.signInWithPassword({email, password});
+    const {error} = await client.auth.signInWithPassword({email, password});
     $('login-password').value = '';
-    if (result.error) throw Error(mode === 'signup' ? '注册未成功，请检查邮箱、密码或稍后重试。' : '登录未成功，请检查账号、密码及邮箱验证状态。');
-    if (mode === 'signup' && !result.data.session) {
-      authMessage.textContent = '请查看邮箱中的确认邮件，完成验证后回到这里登录。'; return;
-    }
+    if (error) throw Error('登录未成功，请检查账号、密码及邮箱验证状态。');
     await resumeSession();
   } catch (error) { authMessage.textContent = error.message || '操作未完成，请检查网络后重试。'; }
   finally { buttons.forEach(b => b.disabled = false); }
 }
-loginForm.addEventListener('submit', e => { e.preventDefault(); authenticate('login'); });
-$('signup-button').onclick = () => authenticate('signup');
+loginForm.addEventListener('submit', e => { e.preventDefault(); signIn(); });
 $('retry-login').onclick = () => client ? resumeSession() : location.reload();
 $('sync-now').onclick = () => syncEngine && syncEngine.sync();
 $('sign-out').onclick = async () => {
